@@ -18,26 +18,18 @@
           <table class="table table-striped">
             <thead>
               <tr>
+                <th>File name</th>
                 <th>Subject</th>
                 <th>Year</th>
-                <th>Doc name</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Test 1 IRAV</td>
-                <td>Test 1 año</td>
-                <td>Test 1 doc apuntes.pdf</td>
-              </tr>
-              <tr>
-                <td>Test 2 IRAV</td>
-                <td>Test 2 año</td>
-                <td>Test 2 doc apuntes.pdf</td>
-              </tr>
-              <tr>
-                <td>Test 3 IRAV</td>
-                <td>Test 3 año</td>
-                <td>Test 3 doc apuntes.pdf</td>
+              <tr v-for="(note, idx) in notesAll" :key="idx">
+                <td>
+                  <a v-bind:href="note.url">{{ note.fichero }}</a>
+                </td>
+                <td>{{ note.subject }}</td>
+                <td>{{ note.year }}</td>
               </tr>
             </tbody>
           </table>
@@ -49,15 +41,37 @@
 
 <script>
 import firebase /*, { db } */ from '~/services/fireinit'
-const notesAll = firebase.firestore().collection('notes')
 
 export default {
-  firebase: {
-    notes: notesAll
-  },
   data() {
-    return {}
+    return {
+      notesAll: []
+    }
   },
+  created: function() {
+    firebase
+      .firestore()
+      .collection('notes')
+      .orderBy('fichero')
+      .limit(20)
+      .get()
+      .then(querySnapshot => {
+        const resultado = []
+        querySnapshot.forEach(doc => {
+          const data = {
+            id: doc.id,
+            data: doc.data(),
+            fichero: doc.data().fichero,
+            subject: doc.data().subject,
+            url: doc.data().url,
+            year: doc.data().anyo
+          }
+          resultado.push(data)
+        })
+        this.notesAll = resultado
+      })
+  },
+
   methods: {}
 }
 </script>
